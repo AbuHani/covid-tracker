@@ -1,26 +1,26 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Navbar } from "components";
+import { BrowserRouter } from 'react-router-dom';
+
+import { Container } from "./styled/Container";
+
+import "./App.css";
+import { GlobalStyle } from 'styled/Global';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container>
+      <BrowserRouter >
+        <GlobalStyle />
+        <Navbar />
+      </BrowserRouter>
+    </Container>
   );
 }
 
 export default App;
+
+
+setInterval(() => {
+  
+}, 3000);
