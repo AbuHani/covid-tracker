@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { makeStyles } from '@material-ui/core';
-import { DataTable, ErrorBoundary, CountryPicker } from 'components';
+import { DataTable, ErrorBoundary } from 'components';
+import { CountrytWrapper } from 'styled/Container';
 import { getSummary } from 'services/api'
 import { chunck, getMaxHeight } from 'utils';
 
-let tableRows = [];
-const rowsCountPerPage = 10;
 const columns = [
     {
         id: 'country',
@@ -68,81 +67,86 @@ const createRowData = (data) => {
 }
 
 function SummaryPage() {
+    const [countries, setCountries] = useState([]);
+    const [selectedCountries, setSelectedCountries] = useState([]);
+    const [rowsCountPerPage, setRowsCountPerPage] = useState(10);
     const [rows, setRows] = useState([]);
-    const [countries, setCountry] = useState([]);
     const classes = useStyles();
 
-    useEffect(() => {
-        (async () => {
-            const data = await getSummary();
-            tableRows = data['Countries'].reduce(
+    const generateTableRows = useCallback(
+        () => {
+            const countriesCopy = JSON.parse(JSON.stringify(countries));
+            let data = countriesCopy.reduce(
                 (items, item) => {
                     items.push(createRowData(item))
                     return items;
-                }, [])
-            generateTableRows(tableRows, rowsCountPerPage);
-        })()
-    }, []);
+                }, []);
 
+            if (selectedCountries.length) {
+                data = data.reduce((acc, row) => {
+                    const item = selectedCountries.find(country => row.id === country.ISO2);
+                    if (item) {
+                        acc.push(row);
+                    }
+                    return acc;
+                }, []);
+            }
 
-    useEffect(() => {
-        if (countries.length) {
-            const rows = tableRows.reduce((acc, row) => {
-                const item = countries.find(country => row.id === country.ISO2);
-                if (item) {
-                    acc.push(row);
-                }
-                return acc;
+            if (data.length === 1) {
+                return setRows(data);
+            }
+
+            const chuncks = chunck(data, rowsCountPerPage);
+            const tableRows = chuncks.reduce((arr, chunck) => {
+                const hRecoveredRow = getMaxHeight(chunck, 'totalRecovered');
+                const hDeathsRow = getMaxHeight(chunck, 'newDeaths');
+                const hConfirmedRow = getMaxHeight(chunck, 'newConfirmed');
+
+                hRecoveredRow.totalRecovered.style = classes.green;
+                hDeathsRow.newDeaths.style = classes.red;
+                hConfirmedRow.newConfirmed.style = classes.yellow;
+                arr.push(...chunck)
+
+                return arr;
             }, []);
+            setRows(tableRows)
+        },
+        [classes, countries, selectedCountries, rowsCountPerPage],
+    );
 
-            return generateTableRows(rows, rowsCountPerPage);
-        }
+    // https://github.com/facebook/react/issues/15865
+    const onInit = () => {
+        (async () => {
+            const data = await getSummary();
+            setCountries(data['Countries'])
+        })()
+    }
+    useEffect(onInit, []);
 
-        return generateTableRows(tableRows, rowsCountPerPage);
-
-    }, [countries]);
-
-
-    const generateTableRows = (rows, rowsPerPage) => {
-        const rowsCopy = JSON.parse(JSON.stringify(rows));
-        const chuncks = chunck(rowsCopy, rowsPerPage);
-        const newRows = [];
-
-        chuncks.map((chunck) => {
-            const hRecoveredRow = getMaxHeight(chunck, 'totalRecovered');
-            const hDeathsRow = getMaxHeight(chunck, 'newDeaths');
-            const hConfirmedRow = getMaxHeight(chunck, 'newConfirmed');
-
-            hRecoveredRow.totalRecovered.style = classes.green;
-            hDeathsRow.newDeaths.style = classes.red;
-            hConfirmedRow.newConfirmed.style = classes.yellow;
-            newRows.push(...chunck)
-
-            return newRows;
-        });
-
-        setRows(newRows)
+    // https://github.com/facebook/react/issues/15865
+    const tableEffect = () => {
+        generateTableRows();
     }
 
+    useEffect(tableEffect, [classes, countries, selectedCountries, rowsCountPerPage]);
+
+
     const handleCountryChange = (event, countries) => {
-        setCountry(countries);
+        setSelectedCountries(countries);
     };
 
     const handelChangeRowsPage = (rowsPerPage) => {
-        if (rowsPerPage !== -1) {
-            rowsPerPage = rowsPerPage ? rowsPerPage : rowsCountPerPage;
-        } else {
-            rowsPerPage = tableRows.length;
+        if (rowsPerPage === -1) {
+            rowsPerPage = countries.length;
         }
-
-        generateTableRows(tableRows, rowsPerPage);
+        setRowsCountPerPage(rowsPerPage);
     };
 
 
     return (
         <div>
+            <CountrytWrapper handleCountryChange={handleCountryChange} />
             <ErrorBoundary>
-                <CountryPicker handleCountryChange={handleCountryChange} />
                 <DataTable
                     columns={columns}
                     rows={rows}
