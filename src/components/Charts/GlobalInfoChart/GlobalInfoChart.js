@@ -7,26 +7,26 @@ function GlobalInfoChart({ data }) {
     const { TotalConfirmed, TotalRecovered } = data;
 
     return (
-        Object.keys(data).length &&
-        <PieChart
-            data={{
-                labels: [
-                    'Total Confirmed',
-                    'Total Recovered'
-                ],
-                datasets: [{
-                    data: Object.values([TotalConfirmed, TotalRecovered]),
-                    backgroundColor: [
-                        '#FF6384',
-                        '#4ac0c0'
+        Object.keys(data).length ?
+            <PieChart
+                data={{
+                    labels: [
+                        'Total Confirmed',
+                        'Total Recovered'
                     ],
-                    hoverBackgroundColor: [
-                        '#FF6384',
-                        '#4abdbe'
-                    ]
-                }]
-            }}
-        />
+                    datasets: [{
+                        data: Object.values([TotalConfirmed, TotalRecovered]),
+                        backgroundColor: [
+                            '#FF6384',
+                            '#4ac0c0'
+                        ],
+                        hoverBackgroundColor: [
+                            '#FF6384',
+                            '#4abdbe'
+                        ]
+                    }]
+                }}
+            /> : null
     )
 }
 
