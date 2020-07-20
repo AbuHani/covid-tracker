@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -10,9 +10,15 @@ import ListItemText from '@material-ui/core/ListItemText';
 import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import Switch from '@material-ui/core/Switch';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
-import { NavLink, withRouter, Switch, Route } from 'react-router-dom';
+import { NavLink, withRouter, Switch as SwitchRoute, Route } from 'react-router-dom';
 import { MenuList, MenuItem } from '@material-ui/core';
+import {
+    grey,
+    deepPurple
+} from "@material-ui/core/colors";
+import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import Routes from 'AppRoutes';
 
 const drawerWidth = 240;
@@ -43,6 +49,9 @@ const useStyles = makeStyles((theme) => ({
     drawerPaper: {
         width: drawerWidth,
     },
+    title: {
+        flexGrow: 1
+    },
     content: {
         flexGrow: 1,
         padding: theme.spacing(3),
@@ -54,7 +63,25 @@ const Navbar = (props) => {
     const { window } = props;
     const classes = useStyles();
     const theme = useTheme();
-    const [mobileOpen, setMobileOpen] = React.useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [darkState, setDarkState] = useState(false);
+    const palletType = darkState ? "dark" : "light";
+    const mainPrimaryColor = darkState ? grey[800] : deepPurple[500];
+    const mainSecondaryColor = darkState ? grey[50] : deepPurple[500];
+    const darkTheme = createMuiTheme({
+        palette: {
+            type: palletType,
+            primary: {
+                main: mainPrimaryColor
+            },
+            secondary: {
+                main: mainSecondaryColor
+            }
+        }
+    });
+    const handleThemeChange = () => {
+        setDarkState(!darkState);
+    };
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -72,7 +99,6 @@ const Navbar = (props) => {
 
         setMobileOpen(open);
     };
-
     const activeRoute = (routeName) => {
         return props.location.pathname === routeName ? true : false;
     }
@@ -100,70 +126,73 @@ const Navbar = (props) => {
             </div>
         </div>
     );
-
     const container = window !== undefined ? () => window().document.body : undefined;
 
     return (
-        <div className={classes.root}>
-            <CssBaseline />
-            <AppBar position="fixed" className={classes.appBar}>
-                <Toolbar>
-                    <IconButton
-                        color="inherit"
-                        aria-label="open drawer"
-                        edge="start"
-                        onClick={handleDrawerToggle}
-                        className={classes.menuButton}
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                    <Typography variant="h6" noWrap>
-                        COVID-19
-                    </Typography>
-                </Toolbar>
-            </AppBar>
-            <nav className={classes.drawer} aria-label="">
-                {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-                <Hidden smUp implementation="css">
-                    <Drawer
-                        container={container}
-                        variant="temporary"
-                        anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-                        open={mobileOpen}
-                        onClose={handleDrawerToggle}
-                        classes={{
-                            paper: classes.drawerPaper,
-                        }}
-                        ModalProps={{
-                            keepMounted: true, // Better open performance on mobile.
-                        }}
-                    >
-                        {drawer}
-                    </Drawer>
-                </Hidden>
-                <Hidden xsDown implementation="css">
-                    <Drawer
-                        classes={{
-                            paper: classes.drawerPaper,
-                        }}
-                        variant="permanent"
-                        open
-                    >
-                        {drawer}
-                    </Drawer>
-                </Hidden>
-            </nav>
-            <main className={classes.content}>
-                <div className={classes.toolbar} />
-                <Switch>
-                    {Routes.map((route) => (
-                        <Route exact path={route.path} key={route.path}>
-                            <route.component />
-                        </Route>
-                    ))}
-                </Switch>
-            </main>
-        </div >
+        <ThemeProvider theme={darkTheme}>
+            <div className={classes.root}>
+                <CssBaseline />
+                <AppBar position="fixed" className={classes.appBar}>
+                    <Toolbar>
+                        <IconButton
+                            color="inherit"
+                            aria-label="open drawer"
+                            edge="start"
+                            onClick={handleDrawerToggle}
+                            className={classes.menuButton}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                        <Typography variant="h6" noWrap className={classes.title}>
+                            COVID-19
+                        </Typography>
+                        <small> Dark mode</small>
+                        <Switch checked={darkState} onChange={handleThemeChange} />
+                    </Toolbar>
+                </AppBar>
+                <nav className={classes.drawer} aria-label="">
+                    {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
+                    <Hidden smUp implementation="css">
+                        <Drawer
+                            container={container}
+                            variant="temporary"
+                            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+                            open={mobileOpen}
+                            onClose={handleDrawerToggle}
+                            classes={{
+                                paper: classes.drawerPaper,
+                            }}
+                            ModalProps={{
+                                keepMounted: true, // Better open performance on mobile.
+                            }}
+                        >
+                            {drawer}
+                        </Drawer>
+                    </Hidden>
+                    <Hidden xsDown implementation="css">
+                        <Drawer
+                            classes={{
+                                paper: classes.drawerPaper,
+                            }}
+                            variant="permanent"
+                            open
+                        >
+                            {drawer}
+                        </Drawer>
+                    </Hidden>
+                </nav>
+                <main className={classes.content}>
+                    <div className={classes.toolbar} />
+                    <SwitchRoute>
+                        {Routes.map((route) => (
+                            <Route exact path={route.path} key={route.path}>
+                                <route.component />
+                            </Route>
+                        ))}
+                    </SwitchRoute>
+                </main>
+            </div >
+        </ThemeProvider>
     );
 };
 
