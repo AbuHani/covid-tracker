@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navbar } from "components";
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 
 import { Container } from "./styled/Container";
 
@@ -10,10 +10,10 @@ import { GlobalStyle } from 'styled/Global';
 function App() {
   return (
     <Container>
-      <BrowserRouter >
+      <Router >
         <GlobalStyle />
         <Navbar />
-      </BrowserRouter>
+      </Router>
     </Container>
   );
 }
@@ -22,5 +22,5 @@ export default App;
 
 
 setInterval(() => {
-  
+
 }, 3000);
