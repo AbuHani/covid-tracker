@@ -4,7 +4,7 @@ import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-export default function CountryPicker({ handleCountryChange }) {
+export default function CountryPicker({className, handleCountryChange }) {
 
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState([]);
@@ -37,7 +37,8 @@ export default function CountryPicker({ handleCountryChange }) {
   }, [open]);
 
   return (
-    <Autocomplete
+  <div className={className}>
+      <Autocomplete
       multiple
       style={{ width: 300 }}
       open={open}
@@ -69,5 +70,6 @@ export default function CountryPicker({ handleCountryChange }) {
         />
       )}
     />
+  </div>
   );
 }
